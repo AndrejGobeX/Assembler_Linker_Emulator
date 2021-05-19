@@ -1,3 +1,13 @@
 *.pdf
 *.out
 test/*
+assembler/location.hh
+assembler/parser.cpp
+assembler/parser.hpp
+assembler/position.hh
+assembler/scanner.cpp
+assembler/stack.hh
+assembler/assembler
+assembler/errs
+assembler/fajl
+assembler/ic.s
