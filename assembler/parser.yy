@@ -126,6 +126,10 @@ directive:  GLOBAL list_id {
                       sym_tab.make_entry(0, le_compiler->get_section(),
                       false, false, 0)
                     );
+                    temp_line.set_name(".section");
+                    temp_line.add_arg($2);
+                    le_compiler->add_line(temp_line);
+                    temp_line.clear();
             }
   |         WORD list_id_lit {
                     temp_line.set_name(".word");

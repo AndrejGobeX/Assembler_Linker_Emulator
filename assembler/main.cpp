@@ -26,6 +26,7 @@ int main (int argc, char *argv[])
     if(!res)
     {
         compiler::get_compiler()->get_symbol_table().print();
+        compiler::get_compiler()->print();
     }
     compiler::del_compiler();
     return res;

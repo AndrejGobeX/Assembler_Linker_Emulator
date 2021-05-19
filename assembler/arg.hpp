@@ -27,6 +27,7 @@ public:
     std::string get_argi() { return argi; }
     void add_offset(int _arg){ offset = new arg(_arg);}
     void add_offset(std::string _arg){ offset = new arg(_arg);}
+    bool get_literal(){ return literal; }
 private:
     bool literal;
     int argl;
