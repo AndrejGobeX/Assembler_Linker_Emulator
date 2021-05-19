@@ -1,5 +1,9 @@
 #include <iostream>
 #include "driver.hpp"
+#include "compiler.hpp"
+#include "symbol_table.hpp"
+#include "line.hpp"
+#include "arg.hpp"
 
 int main (int argc, char *argv[])
 {
@@ -18,5 +22,11 @@ int main (int argc, char *argv[])
             res = 1;
             break;
         }
-  return res;
+
+    if(!res)
+    {
+        compiler::get_compiler()->get_symbol_table().print();
+    }
+    compiler::del_compiler();
+    return res;
 }
