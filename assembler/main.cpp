@@ -25,6 +25,7 @@ int main (int argc, char *argv[])
 
     if(!res)
     {
+        compiler::get_compiler()->pass_two();
         compiler::get_compiler()->get_symbol_table().print();
         compiler::get_compiler()->print();
     }

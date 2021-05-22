@@ -25,6 +25,7 @@ public:
     bool find(std::string _name);
     void add(std::string _name, entry e);
     void print();
+    std::unordered_map<std::string, entry> & get_entries(){return entries;}
 private:
     std::unordered_map<std::string, entry> entries;
     unsigned int index = 1;

@@ -3,6 +3,7 @@
 
 #include<string>
 #include<iostream>
+#include<vector>
 
 class arg
 {
@@ -20,20 +21,20 @@ public:
         literal = false;
         argi = _arg;
     }
-    ~arg(){ if(offset!=nullptr) delete offset; }
     int get_argl() { return argl; }
     void set_type(unsigned char _type) { type = _type; }
     unsigned char get_type() { return type; }
     std::string get_argi() { return argi; }
-    void add_offset(int _arg){ offset = new arg(_arg);}
-    void add_offset(std::string _arg){ offset = new arg(_arg);}
+    void add_offset(int _arg){ offsets.push_back(arg(_arg));}
+    void add_offset(std::string _arg){ offsets.push_back(arg(_arg));}
+    arg & get_offset(){ return offsets[0]; }
     bool get_literal(){ return literal; }
 private:
     bool literal;
     int argl;
     std::string argi;
     unsigned char type;
-    arg * offset = nullptr;
+    std::vector<arg> offsets;
     friend std::ostream &operator<<(std::ostream &os, const arg &_arg)
     {
         return os << "arg";

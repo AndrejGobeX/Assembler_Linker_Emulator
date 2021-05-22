@@ -38,8 +38,17 @@ public:
         word >>= 8;
         add_byte(word);
     }
-    void add_byte_symbol(std::string name);
+    void add_word_symbol(std::string name);
+    void add_arg(arg & _arg);
+    unsigned char parse_reg(std::string name);
+    void add_byte(unsigned char a, unsigned char b)
+    {
+        a<<=4;
+        a+=(b & 0xF);
+        add_byte(a);
+    };
     void add_relocation(std::string name, bool pc_rel, int location);
+    void check_symbols();
 private:
     static compiler * ptr;
     std::string section;

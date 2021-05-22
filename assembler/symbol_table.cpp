@@ -49,7 +49,7 @@ bool symbol_table::find(std::string _name)
 
 void symbol_table::print()
 {
-    std::cout<<"SYMBOL TABLE\n";
+    std::cout<<std::hex<<"SYMBOL TABLE\n";
     std::cout<<"i\tname\tval\tg/l\tA\tsection\n";
     std::cout<<"----------------------------------------------------------------------------\n";
     for(std::pair<std::string, entry> e : entries)
