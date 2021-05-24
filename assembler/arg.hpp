@@ -28,6 +28,7 @@ public:
     void add_offset(int _arg){ offsets.push_back(arg(_arg));}
     void add_offset(std::string _arg){ offsets.push_back(arg(_arg));}
     arg & get_offset(){ return offsets[0]; }
+    bool has_offset(){ return offsets.size()>0; }
     bool get_literal(){ return literal; }
 private:
     bool literal;

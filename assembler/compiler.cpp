@@ -1,5 +1,6 @@
 #include"compiler.hpp"
 #include"arg.hpp"
+#include<iomanip>
 
 const int EXCEPTION_SYMBOL_NOT_DEFINED = 2;
 
@@ -88,15 +89,22 @@ void compiler::check_symbols()
     }
 }
 
-void compiler::add_arg(arg & _arg)
+void compiler::add_arg(arg & _arg, short off)
 {
     if(_arg.get_literal())
     {
-        add_word(_arg.get_argl());
+        if(_arg.has_offset())
+        {
+            add_arg(_arg.get_offset(), _arg.get_argl());
+        }
+        else
+        {
+            add_word(_arg.get_argl());
+        }
     }
     else
     {
-        add_word_symbol(_arg.get_argi());
+        add_word_symbol(_arg.get_argi(), off);
     }
 }
 
@@ -122,7 +130,7 @@ void compiler::interpret(line & l)
     }
     else if(name == ".skip")
     {
-        int n = l.get_args()[0].get_argl();
+        short n = l.get_args()[0].get_argl();
         lc += n;
         while(n--)
         {
@@ -145,17 +153,19 @@ void compiler::interpret(line & l)
         }
         else if(name == "push")
         {
-            add_byte(0xC0);
+            add_byte(0xB0);
             unsigned char reg = parse_reg(l.get_args()[0].get_argi());
-            add_byte(reg, 0xF);
-            lc += 2;
+            add_byte(reg, 0x6);
+            add_byte(0x1, 0x2);
+            lc += 3;
         }
         else if(name == "pop")
         {
-            add_byte(0xD0);
+            add_byte(0xA0);
             unsigned char reg = parse_reg(l.get_args()[0].get_argi());
-            add_byte(reg, 0xF);
-            lc += 2;
+            add_byte(reg, 0x6);
+            add_byte(0x4, 0x2);
+            lc += 3;
         }
         else if(name == "iret")
         {
@@ -370,24 +380,29 @@ unsigned char compiler::parse_reg(std::string name)
     }
 }
 
-void compiler::add_word_symbol(std::string name)
+void compiler::add_word_symbol(std::string name, short off)
 {
     if(!sym_tab.find(name))
         throw EXCEPTION_SYMBOL_NOT_DEFINED;
-                
+
     entry e = sym_tab[name];
-    if(e.abs)
+    if(section == e.section)
     {
-        add_word(e.val);
+        add_word(e.val+off-lc);
+    }
+    else if(e.abs)
+    {
+        add_word(e.val+off);
     }
     else if(e.glob)
     {
-        add_relocation(name, false, lc);
+        add_word(off);
+        add_relocation(name, off, lc);
     }
     else
     {
-        add_word(e.val);
-        add_relocation(e.section, false, lc);
+        add_word(e.val+off);
+        add_relocation(e.section, off, lc);
     }
 
 }
@@ -418,7 +433,7 @@ void compiler::print()
         std::cout<<"0x0:\t";
         for(unsigned char & b : byte_list.second)
         {
-            std::cout<<(unsigned int)b<<" ";
+            std::cout<<std::setfill('0')<< std::setw(2)<<(unsigned int)b<<" ";
             c++;
             if(c == 16)
             {

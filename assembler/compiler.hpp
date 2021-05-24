@@ -32,14 +32,14 @@ public:
     void pass_two();
     void interpret(line & l);
     void add_byte(unsigned char b){ bytes[bytes.size() - 1].second.push_back(b); }
-    void add_word(int word)
+    void add_word(short word)
     {
         add_byte(word);
         word >>= 8;
         add_byte(word);
     }
-    void add_word_symbol(std::string name);
-    void add_arg(arg & _arg);
+    void add_word_symbol(std::string name, short off=0);
+    void add_arg(arg & _arg, short off=0);
     unsigned char parse_reg(std::string name);
     void add_byte(unsigned char a, unsigned char b)
     {

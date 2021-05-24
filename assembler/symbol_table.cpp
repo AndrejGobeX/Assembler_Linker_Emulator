@@ -4,7 +4,7 @@
 const int EXCEPTION_DUPLICATE_SYMBOL = 1;
 
 entry symbol_table::make_entry(unsigned int _index, std::string _section,
-        bool _abs, bool _glob, int _val)
+        bool _abs, bool _glob, short _val)
 {
     entry e;
     e.i = _index;

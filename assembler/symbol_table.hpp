@@ -10,7 +10,7 @@ struct entry
     std::string section;
     bool abs;
     bool glob; // l - false, g - true
-    int val; // -2 - global, -1 - extern
+    short val; // -2 - global, -1 - extern
 };
 
 class symbol_table
@@ -19,7 +19,7 @@ class symbol_table
 public:
     symbol_table(){}
     static entry make_entry(unsigned int _index, std::string _section,
-        bool _abs, bool _glob, int _val);
+        bool _abs, bool _glob, short _val);
     int size(){return entries.size();}
     entry & operator[](std::string _name){return entries[_name];}
     bool find(std::string _name);

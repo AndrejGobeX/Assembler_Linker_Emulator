@@ -197,7 +197,7 @@ operand:    "$" literal                     { $$ = arg::make_arg($2, 0); }
   |         "$" IDENTIFIER                  { $$ = arg::make_arg($2, 0); }
   |         literal                         { $$ = arg::make_arg($1, 4); }
   |         IDENTIFIER                      { $$ = arg::make_arg($1, 4); }
-  |         "%" IDENTIFIER                  { $$ = arg::make_arg("pc", 3); $$.add_offset($2); }
+  |         "%" IDENTIFIER                  { $$ = arg::make_arg("pc", 3); $$.add_offset(-2); $$.get_offset().add_offset($2); }
   |         REGISTER                        { $$ = arg::make_arg($1, 1); }
   |         "[" REGISTER "]"                { $$ = arg::make_arg($2, 2); }
   |         "[" REGISTER PLUS literal "]"   { $$ = arg::make_arg($2, 3); $$.add_offset($4); }
@@ -206,7 +206,7 @@ operand:    "$" literal                     { $$ = arg::make_arg($2, 0); }
 
 operand_jmp:  literal                             { $$ = arg::make_arg($1, 0); }
   |           IDENTIFIER                          { $$ = arg::make_arg($1, 0); }
-  |           "%" IDENTIFIER                      { $$ = arg::make_arg("pc", 3); $$.add_offset($2); }
+  |           "%" IDENTIFIER                      { $$ = arg::make_arg("pc", 3); $$.add_offset(-2); $$.get_offset().add_offset($2); }
   |           "*" literal                         { $$ = arg::make_arg($2, 4); }
   |           "*" IDENTIFIER                      { $$ = arg::make_arg($2, 4); }
   |           "*" REGISTER                        { $$ = arg::make_arg($2, 1); }
