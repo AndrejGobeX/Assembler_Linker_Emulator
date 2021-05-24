@@ -24,7 +24,8 @@ public:
         compiler::ptr = nullptr;
     }
     void add_line(line _line);
-    void print();
+    void print(std::string file_name);
+    void generate(std::string file_name);
     symbol_table & get_symbol_table(){return sym_tab;}
     std::string get_section(){return section;}
     void set_section(std::string _section){section = _section; lc = 0;}

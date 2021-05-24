@@ -1,6 +1,7 @@
 #include"compiler.hpp"
 #include"arg.hpp"
 #include<iomanip>
+#include<fstream>
 
 const int EXCEPTION_SYMBOL_NOT_DEFINED = 2;
 
@@ -416,31 +417,76 @@ void compiler::add_relocation(std::string name, bool pc_rel, int location)
     relocations[relocations.size() - 1].second.push_back(r);
 }
 
-void compiler::print()
+void compiler::print(std::string file_name)
 {
+    std::ofstream out(file_name, std::ofstream::trunc); 
+    for(std::pair<std::string, entry> e : sym_tab.get_entries())
+    {
+        out<<e.second.i<<"\t";
+        out<<e.first<<"\t";
+        out<<e.second.val<<"\t";
+        out<<(e.second.glob ? "g" : "l")<<"\t";
+        out<<e.second.abs<<"\t";
+        out<<(e.second.section == "" ? "UND" : e.second.section)<<"\n";
+    }
     for(std::pair<std::string, std::vector<relocation>> & rel_list : relocations)
     {
-        std::cout<<"\nRelocations for "<<rel_list.first<<"\n";
+        out<<"\nRelocations for "<<rel_list.first<<"\n";
         for(relocation & rel : rel_list.second)
         {
-            std::cout<<rel.location<<"\t"<<rel.pc_rel<<"\t"<<rel.name<<"\n";
+            out<<rel.location<<"\t"<<rel.pc_rel<<"\t"<<rel.name<<"\n";
         }
     }
     for(std::pair<std::string, std::vector<unsigned char>> & byte_list : bytes)
     {
-        std::cout<<"\nBytes of "<<byte_list.first<<"\n";
+        out<<"\nBytes of "<<byte_list.first<<"\n";
         int c = 0, cc = 0;
-        std::cout<<"0x0:\t";
+        out<<"0x0:\t";
         for(unsigned char & b : byte_list.second)
         {
-            std::cout<<std::setfill('0')<< std::setw(2)<<(unsigned int)b<<" ";
+            out<<std::setfill('0')<< std::setw(2)<<(unsigned int)b<<" ";
             c++;
             if(c == 16)
             {
                 c=0;
                 cc++;
-                std::cout<<"\n0x"<<cc<<":\t";
+                out<<"\n0x"<<cc<<":\t";
             }
         }
     }
+    out.close();
+}
+
+void compiler::generate(std::string file_name)
+{
+    std::ofstream out(file_name, std::ofstream::trunc);
+    for(std::pair<std::string, entry> e : sym_tab.get_entries())
+    {
+        out<<e.second.i<<" ";
+        out<<e.first<<" ";
+        out<<e.second.val<<" ";
+        out<<(e.second.glob ? "g" : "l")<<" ";
+        out<<e.second.abs<<" ";
+        out<<(e.second.section == "" ? "UND" : e.second.section)<<"\n";
+    }
+    out<<"\n";
+    for(std::pair<std::string, std::vector<relocation>> & rel_list : relocations)
+    {
+        out<<rel_list.first<<"\n";
+        for(relocation & rel : rel_list.second)
+        {
+            out<<rel.location<<" "<<rel.pc_rel<<" "<<rel.name<<"\n";
+        }
+    }
+    out<<"\n";
+    for(std::pair<std::string, std::vector<unsigned char>> & byte_list : bytes)
+    {
+        out<<byte_list.first<<"\n";
+        for(unsigned char & b : byte_list.second)
+        {
+            out<<(unsigned int)b<<" ";
+        }
+        out<<"\n";
+    }
+    out.close();
 }
