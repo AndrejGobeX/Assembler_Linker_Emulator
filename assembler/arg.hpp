@@ -23,7 +23,7 @@ public:
     }
     int get_argl() { return argl; }
     void set_type(unsigned char _type) { type = _type; }
-    unsigned char get_type() { return type; }
+    short get_type() { return type; }
     std::string get_argi() { return argi; }
     void add_offset(int _arg){ offsets.push_back(arg(_arg));}
     void add_offset(std::string _arg){ offsets.push_back(arg(_arg));}
@@ -34,7 +34,7 @@ private:
     bool literal;
     int argl;
     std::string argi;
-    unsigned char type;
+    short type;
     std::vector<arg> offsets;
     friend std::ostream &operator<<(std::ostream &os, const arg &_arg)
     {

@@ -39,7 +39,7 @@ void compiler::add_line(line _line)
     }
     else if(_line.get_jmp())
     {
-        unsigned char type = _line.get_args()[0].get_type();
+        short type = _line.get_args()[0].get_type();
         if(type == 1 || type == 2)
             lc += 3;
         else
@@ -47,7 +47,7 @@ void compiler::add_line(line _line)
     }
     else if(_line.get_name() == "ldr" || _line.get_name() == "str")
     {
-        unsigned char type = _line.get_args()[0].get_type();
+        short type = _line.get_args()[1].get_type();
         if(type == 1 || type == 2)
             lc += 3;
         else
@@ -126,6 +126,21 @@ void compiler::interpret(line & l)
         for(arg & _arg : l.get_args())
         {
             add_arg(_arg);
+            auto & last = bytes[bytes.size()-1].second;
+            unsigned char temp = last[last.size()-1];
+            last[last.size()-1] = last[last.size()-2];
+            last[last.size()-2] = temp;
+
+            if(relocations.size()>0)
+            {
+                auto & last_rel = relocations[relocations.size()-1];
+                if(last_rel.second.size()>0)
+                {
+                    relocation & rel = last_rel.second[last_rel.second.size()-1];
+                    if(last_rel.first == section && rel.location == lc)
+                        rel.little = true;
+                }
+            }
             lc += 2;
         }
     }
@@ -182,7 +197,7 @@ void compiler::interpret(line & l)
         {
             add_byte(0x30);
             lc += 1;
-            unsigned char type = l.get_args()[0].get_type();
+            short type = l.get_args()[0].get_type();
             if(type == 0 || type == 4)
             {
                 add_byte(0xF, 0x0);
@@ -213,7 +228,7 @@ void compiler::interpret(line & l)
 
             add_byte(0x5, jtype);
             lc += 1;
-            unsigned char type = l.get_args()[0].get_type();
+            short type = l.get_args()[0].get_type();
             if(type == 0 || type == 4)
             {
                 add_byte(0xF, 0x0);
@@ -239,7 +254,7 @@ void compiler::interpret(line & l)
         {
             add_byte(0xA0);
             lc += 1;
-            unsigned char type = l.get_args()[1].get_type();
+            short type = l.get_args()[1].get_type();
             if(type == 0 || type == 4)
             {
                 unsigned char reg = parse_reg(l.get_args()[0].get_argi());
@@ -267,7 +282,7 @@ void compiler::interpret(line & l)
         {
             add_byte(0xB0);
             lc += 1;
-            unsigned char type = l.get_args()[1].get_type();
+            short type = l.get_args()[1].get_type();
             if(type == 0 || type == 4)
             {
                 unsigned char reg = parse_reg(l.get_args()[0].get_argi());
@@ -387,7 +402,7 @@ void compiler::add_word_symbol(std::string name, short off)
         throw EXCEPTION_SYMBOL_NOT_DEFINED;
 
     entry e = sym_tab[name];
-    if(section == e.section)
+    if(off && section == e.section)
     {
         add_word(e.val+off-lc);
     }
@@ -462,7 +477,7 @@ void compiler::generate(std::string file_name)
     std::ofstream out(file_name, std::ofstream::trunc);
     for(std::pair<std::string, entry> e : sym_tab.get_entries())
     {
-        out<<e.second.i<<" ";
+        out<<std::hex<<e.second.i<<" ";
         out<<e.first<<" ";
         out<<e.second.val<<" ";
         out<<(e.second.glob ? "g" : "l")<<" ";
@@ -475,7 +490,7 @@ void compiler::generate(std::string file_name)
         out<<rel_list.first<<"\n";
         for(relocation & rel : rel_list.second)
         {
-            out<<rel.location<<" "<<rel.pc_rel<<" "<<rel.name<<"\n";
+            out<<rel.location<<" "<<rel.pc_rel<<" "<<rel.little<<" "<<rel.name<<"\n";
         }
     }
     out<<"\n";

@@ -10,6 +10,7 @@ struct relocation
 {
     std::string name;
     bool pc_rel;
+    bool little = false;
     int location;
 };
 
@@ -35,8 +36,7 @@ public:
     void add_byte(unsigned char b){ bytes[bytes.size() - 1].second.push_back(b); }
     void add_word(short word)
     {
-        add_byte(word);
-        word >>= 8;
+        add_byte(word>>8);
         add_byte(word);
     }
     void add_word_symbol(std::string name, short off=0);
