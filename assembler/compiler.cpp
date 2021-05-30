@@ -206,13 +206,13 @@ void compiler::interpret(line & l)
                 add_arg(l.get_args()[0]);
                 lc += 2;
             }
-            else if(type == 1 || type == 2 || type == 3)
+            else if(type == 1 || type == 2 || type == 3 || type == 5)
             {
                 unsigned char reg = parse_reg(l.get_args()[0].get_argi());
                 add_byte(0xF, reg);
                 add_byte(0x0, type);
                 lc += 2;
-                if(type == 3)
+                if(type == 3 || type == 5)
                 {
                     add_arg(l.get_args()[0].get_offset());
                     lc += 2;
@@ -237,13 +237,13 @@ void compiler::interpret(line & l)
                 add_arg(l.get_args()[0]);
                 lc += 2;
             }
-            else if(type == 1 || type == 2 || type == 3)
+            else if(type == 1 || type == 2 || type == 3 || type == 5)
             {
                 unsigned char reg = parse_reg(l.get_args()[0].get_argi());
                 add_byte(0xF, reg);
                 add_byte(0x0, type);
                 lc += 2;
-                if(type == 3)
+                if(type == 3 || type == 5)
                 {
                     add_arg(l.get_args()[0].get_offset());
                     lc += 2;
@@ -264,14 +264,14 @@ void compiler::interpret(line & l)
                 add_arg(l.get_args()[1]);
                 lc += 2;
             }
-            else if(type == 1 || type == 2 || type == 3)
+            else if(type == 1 || type == 2 || type == 3 || type == 5)
             {
                 unsigned char reg = parse_reg(l.get_args()[0].get_argi());
                 unsigned char reg1 = parse_reg(l.get_args()[1].get_argi());
                 add_byte(reg, reg1);
                 add_byte(0x0, type);
                 lc += 2;
-                if(type == 3)
+                if(type == 3 || type == 5)
                 {
                     add_arg(l.get_args()[1].get_offset());
                     lc += 2;
@@ -292,14 +292,14 @@ void compiler::interpret(line & l)
                 add_arg(l.get_args()[1]);
                 lc += 2;
             }
-            else if(type == 1 || type == 2 || type == 3)
+            else if(type == 1 || type == 2 || type == 3 || type == 5)
             {
                 unsigned char reg = parse_reg(l.get_args()[0].get_argi());
                 unsigned char reg1 = parse_reg(l.get_args()[1].get_argi());
                 add_byte(reg, reg1);
                 add_byte(0x0, type);
                 lc += 2;
-                if(type == 3)
+                if(type == 3 || type == 5)
                 {
                     add_arg(l.get_args()[1].get_offset());
                     lc += 2;
