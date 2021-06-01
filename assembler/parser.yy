@@ -150,7 +150,7 @@ directive:  GLOBAL list_id {
             }
   |         EQU IDENTIFIER "," literal { 
                     sym_tab.add($2,
-                      sym_tab.make_entry(0, "",
+                      sym_tab.make_entry(0, "ABS",
                       true, false, $4)
                     );
             }

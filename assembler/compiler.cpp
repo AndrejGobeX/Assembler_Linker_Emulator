@@ -477,11 +477,10 @@ void compiler::generate(std::string file_name)
     std::ofstream out(file_name, std::ofstream::trunc);
     for(std::pair<std::string, entry> e : sym_tab.get_entries())
     {
-        out<<std::hex<<e.second.i<<" ";
+        out<<std::hex;
         out<<e.first<<" ";
         out<<e.second.val<<" ";
         out<<(e.second.glob ? "g" : "l")<<" ";
-        out<<e.second.abs<<" ";
         out<<(e.second.section == "" ? "UND" : e.second.section)<<"\n";
     }
     out<<"\n";
