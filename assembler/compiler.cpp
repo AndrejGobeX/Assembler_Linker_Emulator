@@ -477,6 +477,8 @@ void compiler::generate(std::string file_name)
     std::ofstream out(file_name, std::ofstream::trunc);
     for(std::pair<std::string, entry> e : sym_tab.get_entries())
     {
+        if(!e.second.glob && e.second.section != e.first)
+            continue;
         out<<std::hex;
         out<<e.first<<" ";
         out<<e.second.val<<" ";
@@ -486,7 +488,7 @@ void compiler::generate(std::string file_name)
     out<<"\n";
     for(std::pair<std::string, std::vector<relocation>> & rel_list : relocations)
     {
-        out<<rel_list.first<<"\n";
+        out<<rel_list.first<<" "<<rel_list.second.size()<<"\n";
         for(relocation & rel : rel_list.second)
         {
             out<<rel.location<<" "<<rel.pc_rel<<" "<<rel.little<<" "<<rel.name<<"\n";
