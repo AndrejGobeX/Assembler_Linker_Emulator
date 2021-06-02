@@ -62,6 +62,9 @@ int main (int argc, char *argv[])
         _linker->link_file(file);
     }
 
+    
+    _linker->fix_relocations();
+
     linker::delete_linker();
 
     return 0;
