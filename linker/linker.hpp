@@ -29,10 +29,10 @@ public:
         short addend = 0;
     };
 
-    static linker * get_linker(){ if(instance == nullptr)instance = new linker(); return instance; }
+    static linker * get_linker(){ if(instance == nullptr)instance = new linker(); instance->bytes["#default"]; return instance; }
     static void delete_linker(){ if(instance != nullptr){delete instance; instance = nullptr;} }
 
-    void link_file(std::string);
+    void link_file(std::ifstream &);
     void add_symbol(linker::symbol);
     void add_relocation(linker::relocation, std::string);
     unsigned short get_offset(std::string section)
@@ -44,6 +44,8 @@ public:
             offset = bytes[section].size();
         return offset;
     }
+    void check_symbols();
+    void fix_sections();
     void fix_relocations();
     bool symbol_defined(std::string name)
     {
@@ -52,6 +54,11 @@ public:
                 return true;
         return false;
     }
+    void add_word(unsigned short, bool, std::string, unsigned short);
+
+    void generate_linkable(std::ofstream &);
+    void generate_executable(std::ofstream &);
+    void set_section_starts(std::vector<std::pair<unsigned short, std::string>> & starts){ section_starts = starts; };
 
 private:
     static linker * instance;
@@ -59,6 +66,8 @@ private:
     std::unordered_map<std::string, std::vector<unsigned char>> bytes;
     std::unordered_map<std::string, std::vector<relocation>> relocations;
     std::unordered_map<std::string, symbol> symbols;
+    std::unordered_map<std::string, unsigned short> section_locations;
+    std::vector<std::pair<unsigned short, std::string>> section_starts;
 };
 
 #endif

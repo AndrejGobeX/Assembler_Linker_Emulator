@@ -25,7 +25,6 @@ public:
         compiler::ptr = nullptr;
     }
     void add_line(line _line);
-    void print(std::string file_name);
     void generate(std::string file_name);
     symbol_table & get_symbol_table(){return sym_tab;}
     std::string get_section(){return section;}
@@ -36,8 +35,8 @@ public:
     void add_byte(unsigned char b){ bytes[bytes.size() - 1].second.push_back(b); }
     void add_word(short word)
     {
-        add_byte(word>>8);
         add_byte(word);
+        add_byte(word>>8);
     }
     void add_word_symbol(std::string name, short off=0);
     void add_arg(arg & _arg, short off=0);

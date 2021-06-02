@@ -432,46 +432,6 @@ void compiler::add_relocation(std::string name, bool pc_rel, int location)
     relocations[relocations.size() - 1].second.push_back(r);
 }
 
-void compiler::print(std::string file_name)
-{
-    std::ofstream out(file_name, std::ofstream::trunc); 
-    for(std::pair<std::string, entry> e : sym_tab.get_entries())
-    {
-        out<<e.second.i<<"\t";
-        out<<e.first<<"\t";
-        out<<e.second.val<<"\t";
-        out<<(e.second.glob ? "g" : "l")<<"\t";
-        out<<e.second.abs<<"\t";
-        out<<(e.second.section == "" ? "UND" : e.second.section)<<"\n";
-    }
-    for(std::pair<std::string, std::vector<relocation>> & rel_list : relocations)
-    {
-        out<<"\nRelocations for "<<rel_list.first<<"\n";
-        for(relocation & rel : rel_list.second)
-        {
-            out<<rel.location<<"\t"<<rel.pc_rel<<"\t"<<rel.name<<"\n";
-        }
-    }
-    for(std::pair<std::string, std::vector<unsigned char>> & byte_list : bytes)
-    {
-        out<<"\nBytes of "<<byte_list.first<<"\n";
-        int c = 0, cc = 0;
-        out<<"0x0:\t";
-        for(unsigned char & b : byte_list.second)
-        {
-            out<<std::setfill('0')<< std::setw(2)<<(unsigned int)b<<" ";
-            c++;
-            if(c == 16)
-            {
-                c=0;
-                cc++;
-                out<<"\n0x"<<cc<<":\t";
-            }
-        }
-    }
-    out.close();
-}
-
 void compiler::generate(std::string file_name)
 {
     std::ofstream out(file_name, std::ofstream::trunc);
@@ -482,7 +442,6 @@ void compiler::generate(std::string file_name)
         out<<std::hex;
         out<<e.first<<" ";
         out<<e.second.val<<" ";
-        out<<(e.second.glob ? "g" : "l")<<" ";
         out<<(e.second.section == "" ? "UND" : e.second.section)<<"\n";
     }
     out<<"\n";

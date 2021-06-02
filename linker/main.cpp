@@ -1,4 +1,5 @@
 #include<iostream>
+#include<fstream>
 #include<string>
 #include<regex>
 #include<unordered_map>
@@ -11,7 +12,7 @@ int main (int argc, char *argv[])
     std::regex section_pattern ("-place=([a-zA-Z][a-zA-Z_0-9]*)@(0x[0-9A-Fa-f]+)");
     std::smatch sm;
     std::string str;
-    std::unordered_map<std::string, short> sections;
+    std::vector<std::pair<unsigned short, std::string>> sections;
     std::stringstream ss;
     std::vector<std::string> files;
 
@@ -31,7 +32,7 @@ int main (int argc, char *argv[])
                 ss<<std::hex<<sm[2];
                 short start;
                 ss>>start;
-                sections[sm[1]] = start;
+                sections.push_back({start, sm[1]});
                 ss.clear();
             }
             else
@@ -57,13 +58,25 @@ int main (int argc, char *argv[])
 
     linker * _linker = linker::get_linker();
 
-    for(std::string file : files)
+    for(std::string filename : files)
     {
+        std::ifstream file(filename);
         _linker->link_file(file);
+        file.close();
     }
 
-    
-    _linker->fix_relocations();
+    std::ofstream out(file_name, std::ofstream::trunc);
+    if(link)
+    {
+        _linker->fix_relocations();
+        _linker->generate_linkable(out);
+    }
+    else
+    {
+        _linker->set_section_starts(sections);
+        _linker->generate_executable(out);
+    }
+    out.close();
 
     linker::delete_linker();
 
