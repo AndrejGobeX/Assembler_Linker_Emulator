@@ -1,8 +1,10 @@
 #include"linker.hpp"
 #include"linker_exceptions.hpp"
+#include<iomanip>
 #include<fstream>
 #include<sstream>
 #include<algorithm>
+#include<unordered_set>
 
 linker * linker::instance = nullptr;
 
@@ -72,11 +74,6 @@ void linker::check_symbols()
     }
 }
 
-void linker::fix_sections()
-{
-
-}
-
 void linker::fix_relocations()
 {
     for(std::pair<std::string, std::vector<relocation>> rels : relocations)
@@ -84,10 +81,20 @@ void linker::fix_relocations()
         std::string section = rels.first;
         for(relocation rel : rels.second)
         {
-            add_word(symbols[rel.symbol].val, rel.big_endian, section, rel.location);
-            add_word(rel.addend, rel.big_endian, section, rel.location);
+            if(!symbols[rel.symbol].is_section())
+            {
+                add_word(symbols[rel.symbol].val, rel.big_endian, section, rel.location);
+            }
+            else
+            {
+                add_word(rel.addend, rel.big_endian, section, rel.location);
+            }
+            add_word(section_locations[symbols[rel.symbol].section_abs], rel.big_endian, section, rel.location);
             if(rel.pc_rel)
+            {
                 add_word(-rel.location, rel.big_endian, section, rel.location);
+                add_word(-section_locations[section], rel.big_endian, section, rel.location);
+            }
         }
     }
 }
@@ -135,17 +142,43 @@ void linker::generate_linkable(std::ofstream & out)
 
 void linker::generate_executable(std::ofstream & file)
 {
-
+    short loc = 0x10;
+    unsigned short row = -1;
+    file << std::hex << std::setfill('0');
+    for(std::pair<unsigned short, std::string> & section : section_starts)
+    {
+        for(unsigned char & byte : bytes[section.second])
+        {
+            if(!(loc ^ 0x10))
+            {
+                loc = 0;
+                ++ row;
+                if(row)
+                    file << "\n";
+                file << std::setw(4) << row << ": " << std::setw(2);
+            }
+            file << (unsigned short)byte << " ";
+            ++ loc;
+        }
+    }
 }
 
 void linker::fix_sections()
 {
     std::sort(section_starts.begin(), section_starts.end());
+    std::unordered_set<std::string> all_sections;
+    for(auto section : bytes)
+    {
+        all_sections.insert(section.first);
+    }
     unsigned short prev = 0;
     std::string prev_section = "#default";
     section_locations[prev_section] = 0;
+    all_sections.erase("#default");
     for(std::pair<unsigned short, std::string> & start : section_starts)
     {
+        if(all_sections.find(start.second) == all_sections.end())
+            throw linker_exception("Missing or duplicate section " + start.second);
         if(prev > start.first)
             throw linker_exception("Section overlap, sections " + start.second + " and " + prev_section);
         if(prev < start.first)
@@ -159,8 +192,19 @@ void linker::fix_sections()
         section_locations[start.second] = start.first;
         prev = start.first + bytes[start.second].size();
         prev_section = start.second;
+        all_sections.erase(prev_section);
     }
-    //JA sam prosa
+    for(const std::string & section : all_sections)
+    {
+        section_locations[section] = prev;
+        prev += bytes[section].size();
+    }
+    section_starts.clear();
+    for(std::pair<const std::string, unsigned short> & section : section_locations)
+    {
+        section_starts.push_back({section.second, section.first});
+    }
+    std::sort(section_starts.begin(), section_starts.end());
 }
 
 void linker::add_symbol(linker::symbol sym)

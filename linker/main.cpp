@@ -68,12 +68,14 @@ int main (int argc, char *argv[])
     std::ofstream out(file_name, std::ofstream::trunc);
     if(link)
     {
-        _linker->fix_relocations();
         _linker->generate_linkable(out);
     }
     else
     {
+        _linker->check_symbols();
         _linker->set_section_starts(sections);
+        _linker->fix_sections();
+        _linker->fix_relocations();
         _linker->generate_executable(out);
     }
     out.close();
