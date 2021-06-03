@@ -18,7 +18,7 @@ int main (int argc, char *argv[])
 
     for(int i = 1; i < argc; ++i)
     {
-        if(argv[i] == "-o")
+        if(argv[i] == std::string("-o"))
             file_name = argv[++i];
         else if(argv[i] == std::string("-hex"))
             hex = true;

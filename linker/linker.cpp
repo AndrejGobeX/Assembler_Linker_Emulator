@@ -21,6 +21,8 @@ void linker::link_file(std::ifstream & file)
         std::stringstream ss(line);
         linker::symbol sym;
         ss >> sym.name >> sym.val >> sym.section_abs;
+        if(sym.section_abs == "")
+            sym.section_abs = "UND";
         add_symbol(sym);
     }
 
@@ -155,9 +157,9 @@ void linker::generate_executable(std::ofstream & file)
                 ++ row;
                 if(row)
                     file << "\n";
-                file << std::setw(4) << row << ": " << std::setw(2);
+                file << std::setw(4) << row << ": ";
             }
-            file << (unsigned short)byte << " ";
+            file << std::setw(2) << (unsigned short)byte << " ";
             ++ loc;
         }
     }
