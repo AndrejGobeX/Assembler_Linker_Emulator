@@ -55,7 +55,10 @@ public:
         return false;
     }
     void add_word(unsigned short, bool, std::string, unsigned short);
-
+    symbol & get_symbol(std::string name)
+    {
+        return symbols[name];
+    }
     void generate_linkable(std::ofstream &);
     void generate_executable(std::ofstream &);
     void set_section_starts(std::vector<std::pair<unsigned short, std::string>> & starts){ section_starts = starts; };

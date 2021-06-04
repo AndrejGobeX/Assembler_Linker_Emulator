@@ -20,7 +20,7 @@ void linker::link_file(std::ifstream & file)
         
         std::stringstream ss(line);
         linker::symbol sym;
-        ss >> sym.name >> sym.val >> sym.section_abs;
+        ss >> std::hex >> sym.name >> sym.val >> sym.section_abs;
         if(sym.section_abs == "")
             sym.section_abs = "UND";
         add_symbol(sym);
@@ -35,13 +35,13 @@ void linker::link_file(std::ifstream & file)
         std::stringstream ss(line);
         std::string section;
         short size;
-        ss >> section >> size;
+        ss >> std::hex >> section >> size;
         while(size--)
         {
             std::getline(file, line);
             std::stringstream ss(line);
             linker::relocation rel;
-            ss >> rel.location >> rel.pc_rel >> rel.big_endian >> rel.symbol;
+            ss >> std::hex >> rel.location >> rel.pc_rel >> rel.big_endian >> rel.symbol;
             add_relocation(rel, section);
         }
     }
@@ -83,15 +83,15 @@ void linker::fix_relocations()
         std::string section = rels.first;
         for(relocation rel : rels.second)
         {
-            if(!symbols[rel.symbol].is_section())
+            if(!get_symbol(rel.symbol).is_section())
             {
-                add_word(symbols[rel.symbol].val, rel.big_endian, section, rel.location);
+                add_word(get_symbol(rel.symbol).val, rel.big_endian, section, rel.location);
             }
             else
             {
                 add_word(rel.addend, rel.big_endian, section, rel.location);
             }
-            add_word(section_locations[symbols[rel.symbol].section_abs], rel.big_endian, section, rel.location);
+            add_word(section_locations[get_symbol(rel.symbol).section_abs], rel.big_endian, section, rel.location);
             if(rel.pc_rel)
             {
                 add_word(-rel.location, rel.big_endian, section, rel.location);
@@ -117,12 +117,12 @@ void linker::generate_linkable(std::ofstream & out)
         out<<rel_list.first<<" "<<rel_list.second.size()<<"\n";
         for(relocation & rel : rel_list.second)
         {
-            if(rel.pc_rel && symbols[rel.symbol].section_abs == rel_list.first)
+            if(rel.pc_rel && get_symbol(rel.symbol).section_abs == rel_list.first)
             {
                 add_word(-rel.location, rel.big_endian, rel_list.first, rel.location);
-                if(symbols[rel.symbol].is_section())
+                if(get_symbol(rel.symbol).is_section())
                     add_word(rel.addend, rel.big_endian, rel_list.first, rel.location);
-                add_word(symbols[rel.symbol].val, rel.big_endian, rel_list.first, rel.location);
+                add_word(get_symbol(rel.symbol).val, rel.big_endian, rel_list.first, rel.location);
             }
             else
             {
@@ -133,6 +133,8 @@ void linker::generate_linkable(std::ofstream & out)
     out<<"\n";
     for(std::pair<const std::string, std::vector<unsigned char>> & byte_list : bytes)
     {
+        if(byte_list.first == "#default")
+            continue;
         out<<byte_list.first<<"\n";
         for(unsigned char & b : byte_list.second)
         {
@@ -144,17 +146,18 @@ void linker::generate_linkable(std::ofstream & out)
 
 void linker::generate_executable(std::ofstream & file)
 {
-    short loc = 0x10;
-    unsigned short row = -1;
+    short loc = 0x8;
+    unsigned short row = -8;
     file << std::hex << std::setfill('0');
     for(std::pair<unsigned short, std::string> & section : section_starts)
     {
+        std::cout<<section.second<<std::endl;
         for(unsigned char & byte : bytes[section.second])
         {
-            if(!(loc ^ 0x10))
+            if(!(loc ^ 0x8))
             {
                 loc = 0;
-                ++ row;
+                row += 8;
                 if(row)
                     file << "\n";
                 file << std::setw(4) << row << ": ";
@@ -217,14 +220,14 @@ void linker::add_symbol(linker::symbol sym)
         throw linker_exception("Duplicate symbol " + sym.name);
     }
     if(!sym.is_section())sym.val += get_offset(sym.section_abs);
-    symbols[sym.name] = sym;
+    get_symbol(sym.name) = sym;
 }
 
 void linker::add_relocation(linker::relocation rel, std::string section)
 {
     rel.location += get_offset(section);
-    if(symbols[rel.symbol].is_section())
-        rel.addend = get_offset(symbols[rel.symbol].section_abs);
+    if(get_symbol(rel.symbol).is_section())
+        rel.addend = get_offset(get_symbol(rel.symbol).section_abs);
     relocations[section].push_back(rel);
 }
 
