@@ -151,7 +151,6 @@ void linker::generate_executable(std::ofstream & file)
     file << std::hex << std::setfill('0');
     for(std::pair<unsigned short, std::string> & section : section_starts)
     {
-        std::cout<<section.second<<std::endl;
         for(unsigned char & byte : bytes[section.second])
         {
             if(!(loc ^ 0x8))
