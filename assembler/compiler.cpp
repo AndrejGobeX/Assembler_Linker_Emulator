@@ -53,6 +53,10 @@ void compiler::add_line(line _line)
         else
             lc += 5;
     }
+    else if(_line.get_name() == "push" || _line.get_name() == "pop")
+    {
+        lc += 3;
+    }
     else if(_line.get_args().size() == 0)
     {
         lc += 1;

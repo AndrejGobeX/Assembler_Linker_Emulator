@@ -41,7 +41,7 @@ unsigned short emulator::pop()
 void emulator::emulate()
 {
     psw[I] = 0;
-    write_memory_word(timer_cfg, 5);
+    write_memory_word(timer_cfg, 0);
     _terminal.setup();
     running = true;
     sp = term_out;
@@ -110,6 +110,8 @@ void emulator::parse_instruction()
 
 void emulator::execute_instruction(unsigned char instruction[])
 {
+    
+    
     unsigned char code = (instruction[0] >> 4) & 0xF;
     unsigned short entry, t;
     bool c;
@@ -117,11 +119,11 @@ void emulator::execute_instruction(unsigned char instruction[])
     switch (code)
     {
     case HALT:
-        std::cout<<"HALT"<<std::endl;
+        
         running = false;
         break;
     case INT:
-        std::cout<<"INT"<<std::endl;
+        
         entry = ( r[(instruction[1] >> 4)] & 0x111 );
         push(pc);
         push(psw.to_ulong());
@@ -129,40 +131,41 @@ void emulator::execute_instruction(unsigned char instruction[])
         psw[I] = 0;
         break;
     case IRET:
-        std::cout<<"IRET"<<std::endl;
+        
         psw = pop();
         pc = pop();
+        
         break;
     case CALL:
-        std::cout<<"CALL"<<std::endl;
+        
         t = get_operand(instruction);
         push(pc);
         pc = t;
         break;
     case RET:
-        std::cout<<"RET"<<std::endl;
+        
         pc = pop();
         break;
     case JMP:
-        std::cout<<"JMP"<<std::endl;
+        
         switch_jmp(instruction);
         break;
     case XCHG:
-        std::cout<<"XCHG"<<std::endl;
+        
         t = r[instruction[1] & 0xF];
         r[instruction[1] & 0xF] = r[(instruction[1] >> 4) & 0xF];
         r[(instruction[1] >> 4) & 0xF] = t;
         break;
     case ARIT:
-        std::cout<<"ARIT"<<std::endl;
+        
         switch_arit(instruction);
         break;
     case LOG:
-        std::cout<<"LOG"<<std::endl;
+        
         switch_log(instruction);
         break;
     case SH:
-        std::cout<<"SH"<<std::endl;
+        
         c = false;
         if((instruction[0] & 0xF) == 0)
         {
@@ -193,18 +196,20 @@ void emulator::execute_instruction(unsigned char instruction[])
             psw[C] = 1;
         break;
     case LDR:
-        std::cout<<"LDR"<<std::endl;
+        
         t = get_operand(instruction);
         r[(instruction[1] >> 4) & 0xF] = t;
         break;
     case STR:
-        std::cout<<"SDR"<<std::endl;
+        
+        
         set_operand(instruction);
+        
         break;
     default:
         break;
     }
-    for(long long slp = 0; slp < 100000000L; ++slp);
+    //for(long long slp = 0; slp < 500000000L; ++slp);
 }
 
 void emulator::check_interrupts()
@@ -232,11 +237,13 @@ void emulator::check_interrupts()
             if(psw[Tr])
                 return;
         }
-        std::cout<<"interr "<<entry<<std::endl;
+        
+        
         interrupt_flags[entry] = false;
         push(pc);
         push(psw.to_ulong());
         pc = read_memory_word(entry * 2);
+        
         psw[I] = 1;
         if(entry == interrupt_terminal)psw[Tl] = 1;
         if(entry == interrupt_timer)psw[Tr] = 1;
@@ -246,6 +253,8 @@ void emulator::check_interrupts()
 unsigned short emulator::get_operand(unsigned char instruction[])
 {
     unsigned short ret;
+    unsigned short update = (instruction[2] >> 4) & 0xF;
+    unsigned char code = (instruction[0] >> 4) & 0xF;
     switch (instruction[2] & 0xF)
     {
     case IMM:
@@ -256,16 +265,30 @@ unsigned short emulator::get_operand(unsigned char instruction[])
         ret = r[instruction[1] & 0xF];
         break;
     case REGIND:
+        if(update == 1)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 2)
+            r[instruction[1] & 0xF] += 2;
         ret = r[instruction[1] & 0xF];
         ret = read_memory_word(ret);
-        r[instruction[1] & 0xF] += (instruction[1] >> 4) & 0xF;
+        if(update == 3)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 4)
+            r[instruction[1] & 0xF] += 2;
         break;
     case REGINDOFF:
+        if(update == 1)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 2)
+            r[instruction[1] & 0xF] += 2;
         ret = r[instruction[1] & 0xF];
         ret += instruction[3];
         ret += ((unsigned short)instruction[4]) << 8;
         ret = read_memory_word(ret);
-        r[instruction[1] & 0xF] += (instruction[1] >> 4) & 0xF;
+        if(update == 3)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 4)
+            r[instruction[1] & 0xF] += 2;
         break;
     case MEM:
         ret = instruction[3];
@@ -274,8 +297,15 @@ unsigned short emulator::get_operand(unsigned char instruction[])
         break;
     case REGDIROFF:
         ret = r[instruction[1] & 0xF];
+        
         ret += instruction[3];
         ret += ((unsigned short)instruction[4]) << 8;
+        if(code == LDR)
+        {
+            
+            ret = read_memory_word(ret);
+            
+        }
         break;
     default:
         throw emulator_exception("Invalid instruction");
@@ -287,29 +317,51 @@ unsigned short emulator::get_operand(unsigned char instruction[])
 void emulator::set_operand(unsigned char instruction[])
 {
     unsigned short ret;
+    unsigned short update = (instruction[2] >> 4) & 0xF;
     switch (instruction[2] & 0xF)
     {
     case REGDIR:
         r[instruction[1] & 0xF] = r[(instruction[1] >> 4) & 0xF];
         break;
     case REGIND:
+        if(update == 1)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 2)
+            r[instruction[1] & 0xF] += 2;
         ret = r[instruction[1] & 0xF];
         write_memory_word(ret, r[(instruction[1] >> 4) & 0xF]);
-        r[instruction[1] & 0xF] += (instruction[1] >> 4) & 0xF;
+        if(update == 3)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 4)
+            r[instruction[1] & 0xF] += 2;
         break;
     case REGINDOFF:
+        if(update == 1)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 2)
+            r[instruction[1] & 0xF] += 2;
         ret = r[instruction[1] & 0xF];
         ret += instruction[3];
         ret += ((unsigned short)instruction[4]) << 8;
         write_memory_word(ret, r[(instruction[1] >> 4) & 0xF]);
-        r[instruction[1] & 0xF] += (instruction[1] >> 4) & 0xF;
+        if(update == 3)
+            r[instruction[1] & 0xF] -= 2;
+        else if(update == 4)
+            r[instruction[1] & 0xF] += 2;
         break;
     case MEM:
         ret = instruction[3];
         ret += ((unsigned short)instruction[4]) << 8;
         write_memory_word(ret, r[(instruction[1] >> 4) & 0xF]);
         break;
-    default: case IMM: case REGDIROFF: 
+        //TODO: sefefs
+    case REGDIROFF:
+        ret = r[instruction[1] & 0xF];
+        ret += instruction[3];
+        ret += ((unsigned short)instruction[4]) << 8;
+        write_memory_word(ret, r[(instruction[1] >> 4) & 0xF]);
+        break;
+    default: case IMM:
         throw emulator_exception("Invalid instruction");
         break;
     }
@@ -359,6 +411,9 @@ void emulator::switch_arit(unsigned char instruction[])
         break;
     case 4:
         t = r[(instruction[1] >> 4) & 0xF] - r[instruction[1] & 0xF];
+        
+        
+        
         psw[N] = 0;
         psw[Z] = 0;
         psw[O] = 0;
@@ -414,9 +469,6 @@ void emulator::tick()
 {
     time_current = std::chrono::duration_cast<std::chrono::milliseconds>
         (std::chrono::system_clock::now().time_since_epoch()).count();
-    std::cout<<time_current<<std::endl;
-    std::cout<<time_previous<<std::endl;
-    std::cout<<time_interval<<std::endl;
     if(time_current - time_previous >= time_interval)
     {
         interrupt(interrupt_timer);
@@ -431,7 +483,7 @@ void emulator::tick()
         break;
     
     case 1:
-        time_interval = 10000;
+        time_interval = 1000;
         break;
     
     case 2:

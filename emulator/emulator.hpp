@@ -116,7 +116,7 @@ private:
                             O - 1,
                             Z - 0 */
 
-    long long int time_current, time_previous, time_interval = 10000;
+    long long int time_current, time_previous, time_interval = 500;
 };
 
 #endif
