@@ -126,21 +126,6 @@ void compiler::interpret(line & l)
         for(arg & _arg : l.get_args())
         {
             add_arg(_arg);
-            auto & last = bytes[bytes.size()-1].second;
-            unsigned char temp = last[last.size()-1];
-            last[last.size()-1] = last[last.size()-2];
-            last[last.size()-2] = temp;
-
-            if(relocations.size()>0)
-            {
-                auto & last_rel = relocations[relocations.size()-1];
-                if(last_rel.second.size()>0)
-                {
-                    relocation & rel = last_rel.second[last_rel.second.size()-1];
-                    if(last_rel.first == section && rel.location == lc)
-                        rel.little = true;
-                }
-            }
             lc += 2;
         }
     }
