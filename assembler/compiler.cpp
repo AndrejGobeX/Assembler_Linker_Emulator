@@ -324,6 +324,11 @@ void compiler::interpret(line & l)
             else if(name == "not")
             {
                 add_byte(0x80);
+                lc += 1;
+                unsigned char reg = parse_reg(l.get_args()[0].get_argi());
+                add_byte(reg, 0x0);
+                lc += 1;
+                return;
             }
             else if(name == "and")
             {

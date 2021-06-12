@@ -22,8 +22,8 @@ int   [0-9]+
 blank [ \t\r]
 instr_0 (halt|iret|ret)
 instr_jmp (call|jmp|jeq|jne|jgt)
-instr_1 (int|push|pop)
-instr_2 (xchg|add|sub|mul|div|cmp|not|and|or|xor|test|shl|shr)
+instr_1 (int|push|pop|not)
+instr_2 (xchg|add|sub|mul|div|cmp|and|or|xor|test|shl|shr)
 instr_ld_st (ldr|str)
 reg ("r"[0-7]|"pc"|"sp"|"psw")
 
