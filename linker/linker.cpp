@@ -20,7 +20,10 @@ void linker::link_file(std::ifstream & file)
         
         std::stringstream ss(line);
         linker::symbol sym;
-        ss >> std::hex >> sym.name >> sym.val >> sym.section_abs;
+        std::string val;
+        ss >> std::hex >> sym.name >> val >> sym.section_abs;
+        ss = std::stringstream("0x" + val);
+        ss >> std::hex >> sym.val;
         if(sym.section_abs == "")
             sym.section_abs = "UND";
         add_symbol(sym);
@@ -131,6 +134,58 @@ void linker::generate_linkable(std::ofstream & out)
         }
     }
     out<<"\n";
+    for(std::pair<const std::string, std::vector<unsigned char>> & byte_list : bytes)
+    {
+        if(byte_list.first == "#default")
+            continue;
+        out<<byte_list.first<<"\n";
+        for(unsigned char & b : byte_list.second)
+        {
+            out<<(unsigned int)b<<" ";
+        }
+        out<<"\n";
+    }
+}
+
+void linker::generate_hr(std::ofstream & out)
+{
+    out<<"=============================\nSYMBOL TABLE\n=============================\n";
+    out<<std::left<<std::setw(10)<<"Symbol";
+    out<<std::left<<std::setw(10)<<"Value";
+    out<<std::left<<std::setw(10)<<"Section"<<"\n";
+    for(std::pair<std::string, linker::symbol> e : symbols)
+    {
+        
+        out<<std::hex;
+        out<<std::left<<std::setw(10)<<e.first<<"";
+        out<<std::left<<std::setw(10)<<e.second.val<<"";
+        out<<std::left<<std::setw(10)<<e.second.section_abs<<"\n";
+    }
+    out<<"\n";
+    out<<"=============================\nRELOCATIONS\n=============================\n";
+    out<<std::left<<std::setw(10)<<"Location";
+    out<<std::left<<std::setw(10)<<"Relative";
+    out<<std::left<<std::setw(10)<<"Symbol"<<"\n";
+    for(std::pair<const std::string, std::vector<relocation>> & rel_list : relocations)
+    {
+        out<<rel_list.first<<"\n";
+        for(relocation & rel : rel_list.second)
+        {
+            if(rel.pc_rel && get_symbol(rel.symbol).section_abs == rel_list.first)
+            {
+                add_word(-rel.location, rel.big_endian, rel_list.first, rel.location);
+                if(get_symbol(rel.symbol).is_section())
+                    add_word(rel.addend, rel.big_endian, rel_list.first, rel.location);
+                add_word(get_symbol(rel.symbol).val, rel.big_endian, rel_list.first, rel.location);
+            }
+            else
+            {
+                out<<std::left<<std::setw(10)<<rel.location<<std::left<<std::setw(10)<<rel.pc_rel<<std::left<<std::setw(10)<<rel.symbol<<"\n";
+            }
+        }
+    }
+    out<<"\n";
+    out<<"=============================\nBYTES\n=============================\n";
     for(std::pair<const std::string, std::vector<unsigned char>> & byte_list : bytes)
     {
         if(byte_list.first == "#default")

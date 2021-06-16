@@ -429,6 +429,11 @@ void compiler::add_relocation(std::string name, bool pc_rel, int location)
 void compiler::generate(std::string file_name)
 {
     std::ofstream out(file_name, std::ofstream::trunc);
+    std::ofstream out_hr(file_name + ".hr", std::ofstream::trunc);
+    out_hr<<"=============================\nSYMBOL TABLE\n=============================\n";
+    out_hr<<std::left<<std::setw(10)<<"Symbol";
+    out_hr<<std::left<<std::setw(10)<<"Value";
+    out_hr<<std::left<<std::setw(10)<<"Section"<<"\n";
     for(std::pair<std::string, entry> e : sym_tab.get_entries())
     {
         if(!e.second.glob && e.second.section != e.first)
@@ -437,25 +442,43 @@ void compiler::generate(std::string file_name)
         out<<e.first<<" ";
         out<<e.second.val<<" ";
         out<<(e.second.section == "" ? "UND" : e.second.section)<<"\n";
+
+        out_hr<<std::hex;
+        out_hr<<std::left<<std::setw(10)<<e.first<<"";
+        out_hr<<std::left<<std::setw(10)<<e.second.val<<"";
+        out_hr<<std::left<<std::setw(10)<<(e.second.section == "" ? "UND" : e.second.section)<<"\n";
     }
     out<<"\n";
+    out_hr<<"\n=============================\nRELOCATIONS\n=============================\n";
+    out_hr<<std::left<<std::setw(10)<<"Location";
+    out_hr<<std::left<<std::setw(10)<<"Relative";
+    out_hr<<std::left<<std::setw(10)<<"Symbol"<<"\n";
     for(std::pair<std::string, std::vector<relocation>> & rel_list : relocations)
     {
         out<<rel_list.first<<" "<<rel_list.second.size()<<"\n";
+        out_hr<<rel_list.first<<"\n";
         for(relocation & rel : rel_list.second)
         {
             out<<rel.location<<" "<<rel.pc_rel<<" "<<rel.little<<" "<<rel.name<<"\n";
+            out_hr<<std::left<<std::setw(10)<<rel.location;
+            out_hr<<std::left<<std::setw(10)<<rel.pc_rel;
+            out_hr<<std::left<<std::setw(10)<<rel.name<<"\n";
         }
     }
     out<<"\n";
+    out_hr<<"=============================\nBYTES\n=============================\n";
     for(std::pair<std::string, std::vector<unsigned char>> & byte_list : bytes)
     {
         out<<byte_list.first<<"\n";
+        out_hr<<byte_list.first<<"\n";
         for(unsigned char & b : byte_list.second)
         {
             out<<(unsigned int)b<<" ";
+            out_hr<<(unsigned int)b<<" ";
         }
         out<<"\n";
+        out_hr<<"\n";
     }
+    out_hr.close();
     out.close();
 }

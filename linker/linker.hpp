@@ -13,7 +13,7 @@ public:
     struct symbol
     {
         std::string name;
-        short val;
+        unsigned short val;
         std::string section_abs;
         bool is_section()
         {
@@ -23,7 +23,7 @@ public:
 
     struct relocation
     {
-        short location;
+        unsigned short location;
         bool pc_rel, big_endian;
         std::string symbol;
         short addend = 0;
@@ -60,6 +60,7 @@ public:
         return symbols[name];
     }
     void generate_linkable(std::ofstream &);
+    void generate_hr(std::ofstream &);
     void generate_executable(std::ofstream &);
     void set_section_starts(std::vector<std::pair<unsigned short, std::string>> & starts){ section_starts = starts; };
 
