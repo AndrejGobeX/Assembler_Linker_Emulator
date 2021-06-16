@@ -69,6 +69,9 @@ int main (int argc, char *argv[])
     if(link)
     {
         _linker->generate_linkable(out);
+        std::ofstream out_hr(file_name+".hr", std::ofstream::trunc);
+        _linker->generate_hr(out_hr);
+        out_hr.close();
     }
     else
     {

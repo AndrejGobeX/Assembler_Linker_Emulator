@@ -124,7 +124,7 @@ void emulator::execute_instruction(unsigned char instruction[])
         break;
     case INT:
         
-        entry = ( r[(instruction[1] >> 4)] & 0x111 );
+        entry = ( r[(instruction[1] >> 4)] & 0b111 );
         push(pc);
         push(psw.to_ulong());
         pc = read_memory_word(entry * 2);
@@ -159,6 +159,7 @@ void emulator::execute_instruction(unsigned char instruction[])
     case ARIT:
         
         switch_arit(instruction);
+        
         break;
     case LOG:
         
@@ -209,7 +210,7 @@ void emulator::execute_instruction(unsigned char instruction[])
     default:
         break;
     }
-    //for(long long slp = 0; slp < 500000000L; ++slp);
+    //for(long long slp = 0; slp < 50000000L; ++slp);
 }
 
 void emulator::check_interrupts()
