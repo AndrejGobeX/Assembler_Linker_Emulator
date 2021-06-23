@@ -6,4 +6,4 @@ Assembler uses Flex and Bison for lexical analysis and assembly of scripts. The 
 Linker combines the assembled files and pops out a single file containing machine code for the emulated machine.\
 Emulator represents an interpreter which emulates an imaginary architecture for which the above-mentioned language is written.\
 \
-The emulated machine is a Von Neumann machine. It has a 16bit CPU, a terminal and a timer, with support for interrupts. The emulator uses <termios.h> for terminal input management.
+The emulated machine is based on the Von Neumann architecture. It has a 16bit CPU, a terminal and a timer, with support for interrupts. The emulator uses <termios.h> for terminal input management.
